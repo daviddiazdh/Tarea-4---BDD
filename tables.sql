@@ -42,6 +42,7 @@ CREATE TABLE frecuenta(
 CREATE TABLE vende(
     codfs INT,
     codbeb INT,
+    precio INT,
     FOREIGN KEY (codfs) REFERENCES fuente_soda(codfs),
     FOREIGN KEY (codbeb) REFERENCES bebida(codbeb)
 );

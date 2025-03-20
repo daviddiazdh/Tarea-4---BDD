@@ -10,7 +10,7 @@ WHERE NOT EXISTS(
             b.ci AS "cen_cedula",
             b.nombre AS "cen_nombre"
         FROM (  SELECT 
-                    * 
+                    *
                 FROM bebida
                 WHERE nombrebeb = 'Centauro') s
         JOIN gusta g ON g.codbeb = s.codbeb
@@ -135,7 +135,7 @@ FROM(
                 *
             FROM gusta
         )
-    ) q0
+    ) q0 
     JOIN (
         SELECT
             b.ci AS "ci",
@@ -155,7 +155,6 @@ JOIN bebedor b ON b.ci = q2."ci";
 -- Comentarios:
 -- Tiene duplicados.
 -- En la query Q6 se restringe a Nombre, pero las tablas no contienen nombre
-
 
 -- 15. Los bebedores que frecuentan las fuentes de soda que sirven las bebidas que le gustan a Luis Pérez
 SELECT DISTINCT 
@@ -183,3 +182,149 @@ WHERE NOT EXISTS (
 );
 -- Comentarios: 
 -- Listo.
+
+-- 17. Los bebedores a quienes les gustan únicamente las bebidas que sirven en las fuentes de soda que frecuentan
+SELECT
+    *
+FROM bebedor bb
+WHERE (bb.ci,bb.nombre) NOT IN(
+    SELECT
+        bb.ci,
+        bb.nombre
+        FROM gusta g
+        JOIN bebedor bb ON g.ci = bb.ci
+        WHERE (g.ci,g.codbeb) NOT IN(
+            SELECT
+                ci,
+                codbeb
+            FROM frecuenta fr
+            JOIN vende vd ON fr.codfs = vd.codfs
+        )
+        GROUP BY
+            bb.ci,
+            bb.nombre
+);
+
+-- 19. Las fuentes de soda que son frecuentadas por las personas a quienes les gusta la malta
+SELECT 
+    f.codfs,
+    fs.nombrefs,
+FROM bebida b
+JOIN gusta g ON g.codbeb = b.codbeb
+JOIN frecuenta f ON f.ci = g.ci
+JOIN fuente_soda fs ON fs.codfs = f.codfs
+WHERE b.nombrebeb = 'Lechita';
+
+-- Comentarios: 
+-- Listo.
+
+-- 26. Las bebidas que se venden en al menos dos de las fuentes de sodas frecuentadas por Luis Pérez
+SELECT 
+    b.codbeb,
+    b.nombrebeb
+FROM(
+    SELECT
+        v.codbeb AS "codbeb",
+        COUNT(f.codfs) AS "Countcodfs"
+    FROM bebedor b
+    JOIN frecuenta f ON b.ci = f.ci
+    JOIN vende v ON v.codfs = f.codfs
+    WHERE b.nombre='Ian Gracias'
+    GROUP BY v.codbeb
+    HAVING COUNT(f.codfs) >= 2
+) q0
+JOIN bebida b ON b.codbeb = q0."codbeb";
+
+-- Comentarios: 
+-- Listo.
+
+-- 36. La bebida más cara en las fuentes de soda que no venden al menos una de las bebidas que le gusta a Luis Pérez
+SELECT
+    b.codbeb,
+    b.nombrebeb
+FROM bebida b
+JOIN(
+    SELECT
+        v.codbeb AS "codbeb",
+        v.precio AS "precio"
+    FROM fuente_soda fs
+    JOIN vende v ON fs.codfs = v.codfs
+    WHERE fs.codfs NOT IN (
+        SELECT DISTINCT 
+            v.codfs
+        FROM vende v
+        WHERE NOT EXISTS (
+            SELECT 
+                q2."codbeb"
+            FROM (
+                SELECT
+                    g.codbeb AS "codbeb"
+                FROM bebedor b
+                JOIN gusta g ON g.ci = b.ci
+                WHERE b.nombre = 'Mauricio Chambachán'
+            ) q2
+            WHERE NOT EXISTS (
+                SELECT 
+                    1 
+                FROM vende v_inner
+                WHERE v_inner.codfs = v.codfs AND v_inner.codbeb = q2.codbeb
+            )
+        )
+    )
+    ORDER BY v.precio DESC
+    LIMIT 1
+) q3 ON q3."codbeb" = b.codbeb;
+
+-- Comentarios:
+-- Listo
+
+-- 31. La fuente de soda que sirve malta y es la más frecuentada
+SELECT 
+    fs.codfs,
+    fs.nombrefs
+FROM fuente_soda fs
+JOIN (
+    SELECT
+        COUNT(f.ci) AS "Countci",
+        f.codfs AS "codfs"
+    FROM bebida b
+    JOIN vende v ON v.codbeb = b.codbeb
+    JOIN frecuenta f ON f.codfs = v.codfs
+    WHERE b.nombrebeb = 'Guepardex'
+    GROUP BY f.codfs
+    ORDER BY COUNT(f.ci) DESC
+    LIMIT 1
+) q0 ON q0."codfs" = fs.codfs;
+
+-- Comentarios: Listo
+
+-- 48. Las fuentes de soda que sirven la(s) bebida(s) que más gusta(n).
+
+SELECT DISTINCT 
+    v.codfs,
+    fs.nombrefs
+FROM vende v
+JOIN fuente_soda fs ON fs.codfs = v.codfs
+WHERE NOT EXISTS (
+    SELECT 
+        q2."codbeb" 
+    FROM (
+        SELECT
+            g.codbeb AS "codbeb",
+            COUNT(g.ci) AS "Countci"
+        FROM bebida b
+        JOIN gusta g ON g.codbeb = b.codbeb
+        GROUP BY g.codbeb
+        ORDER BY COUNT(g.ci) DESC
+        LIMIT 1
+    ) q2
+    WHERE NOT EXISTS (
+        SELECT 
+            1 
+        FROM vende v_inner
+        WHERE v_inner.codfs = v.codfs AND v_inner.codbeb = q2.codbeb
+    )
+);
+
+-- Comentarios: 
+-- Listo
