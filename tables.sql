@@ -17,7 +17,7 @@ CREATE TABLE fuente_soda(
 
 CREATE TABLE bebida(
     codbeb SERIAL PRIMARY KEY,
-    nombrebeb VARCHAR(100) 
+    nombrebeb VARCHAR(100)
 );
 
 CREATE TABLE bebedor(

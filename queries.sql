@@ -183,7 +183,12 @@ WHERE NOT EXISTS (
 -- Comentarios: 
 -- Listo.
 
--- 17. Los bebedores a quienes les gustan únicamente las bebidas que sirven en las fuentes de soda que frecuentan
+-- ################################################################################
+-- CONSULTA: (17) Los bebedores a quienes les gustan únicamente las bebidas que sirven 
+--                en las fuentes de soda que frecuentan.
+-- LISTO
+-- ################################################################################
+
 SELECT
     *
 FROM bebedor bb
@@ -204,6 +209,24 @@ WHERE (bb.ci,bb.nombre) NOT IN(
             bb.ci,
             bb.nombre
 );
+
+-- ################################################################################
+-- CONSULTA: (18) Las bebidas que les gustan a las personas a quienes les gusta la malta.
+-- LISTO
+-- ################################################################################
+
+SELECT DISTINCT
+    ggouter.codbeb,
+    beb.nombrebeb
+FROM (
+    SELECT 
+    gg.ci AS "ci"
+    FROM gusta gg 
+    JOIN bebida beb ON (beb.codbeb=gg.codbeb)
+    WHERE beb.nombrebeb='Centauro'
+) q0
+JOIN gusta ggouter ON (ggouter.ci = q0."ci")
+JOIN bebida beb ON (ggouter.codbeb = beb.codbeb);
 
 -- 19. Las fuentes de soda que son frecuentadas por las personas a quienes les gusta la malta
 SELECT 
@@ -298,6 +321,143 @@ JOIN (
 
 -- Comentarios: Listo
 
+-- ################################################################################
+-- CONSULTA: (33) Para cada bebida, cuál es el número de fuentes de soda que 
+--                la sirven y el número de personas a quien le gustan.
+-- ################################################################################
+
+WITH q0 AS (
+    SELECT
+        bebida.codbeb,
+        bebida.nombrebeb,
+        COALESCE(COUNT(gusta.ci), 0) AS "Personas que les gusta"
+    FROM bebida
+    LEFT JOIN gusta ON bebida.codbeb = gusta.codbeb
+    GROUP BY
+    bebida.codbeb
+),
+q1 AS (
+    SELECT
+        bebida.codbeb,
+        bebida.nombrebeb,
+        COALESCE(COUNT(vende.codfs), 0) AS "Fuentes de soda que las venden"
+    FROM bebida
+    LEFT JOIN vende ON bebida.codbeb = vende.codbeb
+    GROUP BY
+        bebida.codbeb
+)
+SELECT
+    q0.codbeb,
+    q0.nombrebeb,
+    "Personas que les gusta",
+    "Fuentes de soda que las venden"
+FROM q0 JOIN q1 ON q0.codbeb = q1.codbeb
+ORDER BY
+    q0.nombrebeb ASC;
+
+-- ################################################################################
+-- CONSULTA: (40) El precio promedio de venta de las bebidas que no le gustan a Luis Pérez.
+-- LISTO
+-- ################################################################################
+
+WITH q0 AS (
+    SELECT 
+        *
+    FROM bebedor beb
+    WHERE beb.nombre='David Noches'
+),
+q1 AS (
+    SELECT
+        bebidasQueLeGustan.codbeb
+    FROM q0 luisperez
+    JOIN gusta bebidasQueLeGustan ON luisperez.ci = bebidasQueLeGustan.ci
+),
+q2 AS (
+    SELECT
+        q1.codbeb,
+        bebida.nombrebeb
+    FROM q1
+    JOIN bebida ON bebida.codbeb = q1.codbeb
+),
+q3 AS (
+    SELECT 
+        *
+    FROM bebida 
+    WHERE (bebida.codbeb, bebida.nombrebeb) NOT IN (
+        SELECT
+        *
+        FROM q2
+    )
+),
+q4 AS (
+    SELECT
+        q3.codbeb,
+        q3.nombrebeb,
+        ROUND(AVG(vende.precio),2 )
+    FROM q3
+    JOIN vende ON vende.codbeb = q3.codbeb
+    GROUP BY
+        q3.codbeb,
+        q3.nombrebeb
+)
+SELECT *
+FROM q4;
+
+-- ################################################################################
+-- CONSULTA: (41) Los bebedores que frecuentan al menos 3 fuentes de soda que 
+--                sirven alguna bebida que les gusta.
+-- LISTO
+-- ################################################################################
+
+
+SELECT
+    g.ci,
+    b.nombre,
+    COUNT(DISTINCT v.codfs)
+FROM gusta g
+JOIN vende v ON g.codbeb = v.codbeb
+JOIN frecuenta f ON f.codfs = v.codfs AND f.ci = g.ci
+JOIN bebedor b ON b.ci = g.ci
+GROUP BY
+    g.ci,
+    b.nombre
+HAVING
+    COUNT(DISTINCT v.codfs) >= 3
+ORDER BY
+    g.ci ASC;
+
+-- ################################################################################
+-- CONSULTA: (42) Las fuentes de soda que son frecuentadas por al menos dos 
+--                bebedores que le gustan al menos 3 de las bebidas que sirven.
+-- LISTO
+-- ################################################################################
+
+SELECT
+    q0."codfs",
+    fs.nombrefs
+FROM (
+    SELECT
+        g.ci AS "ci",
+        COUNT(DISTINCT v.codbeb) AS "codbeb",
+        v.codfs AS "codfs"
+    FROM gusta g
+    JOIN vende v ON g.codbeb = v.codbeb
+    GROUP BY
+        g.ci,
+        v.codfs
+    HAVING
+        COUNT(DISTINCT v.codbeb) >= 3
+    ORDER BY
+        g.ci
+) q0
+JOIN frecuenta f ON f.ci = q0."ci" AND f.codfs = q0."codfs"
+JOIN fuente_soda fs ON f.codfs = fs.codfs
+GROUP BY
+    q0."codfs",
+    fs.nombrefs
+HAVING
+    COUNT(DISTINCT q0."ci") >= 2;
+    
 -- 48. Las fuentes de soda que sirven la(s) bebida(s) que más gusta(n).
 
 SELECT DISTINCT 
