@@ -298,7 +298,12 @@ WHERE NOT EXISTS (
 -- Comentarios: 
 -- Listo.
 
--- 17. Los bebedores a quienes les gustan únicamente las bebidas que sirven en las fuentes de soda que frecuentan
+-- ################################################################################
+-- CONSULTA: (17) Los bebedores a quienes les gustan únicamente las bebidas que sirven 
+--                en las fuentes de soda que frecuentan.
+-- LISTO
+-- ################################################################################
+
 SELECT
     *
 FROM bebedor bb
@@ -319,6 +324,24 @@ WHERE (bb.ci,bb.nombre) NOT IN(
             bb.ci,
             bb.nombre
 );
+
+-- ################################################################################
+-- CONSULTA: (18) Las bebidas que les gustan a las personas a quienes les gusta la malta.
+-- LISTO
+-- ################################################################################
+
+SELECT DISTINCT
+    ggouter.codbeb,
+    beb.nombrebeb
+FROM (
+    SELECT 
+    gg.ci AS "ci"
+    FROM gusta gg 
+    JOIN bebida beb ON (beb.codbeb=gg.codbeb)
+    WHERE beb.nombrebeb='Centauro'
+) q0
+JOIN gusta ggouter ON (ggouter.ci = q0."ci")
+JOIN bebida beb ON (ggouter.codbeb = beb.codbeb);
 
 -- 19. Las fuentes de soda que son frecuentadas por las personas a quienes les gusta la malta
 SELECT 
@@ -558,31 +581,6 @@ JOIN (
 ) q0 ON q0."codfs" = fs.codfs;
 
 -- Comentarios: Listo
-
--- 46. Las fuentes de soda que son frecuentadas por el (los) bebedores que le(s) gustan el mayor número de bebidas.
-SELECT DISTINCT
-    f.codfs,
-    fs.nombrefs
-FROM (
-    SELECT
-        g.ci AS "ci",
-        COUNT(g.codbeb) AS "Countcodbeb"
-    FROM gusta g
-    GROUP BY g.ci
-) q0 
-JOIN frecuenta f ON q0."ci" = f.ci
-JOIN fuente_soda fs ON fs.codfs = f.codfs
-WHERE q0."Countcodbeb" IN (
-    SELECT 
-        MAX(q0."Countcodbeb")
-    FROM (
-        SELECT
-            g.ci AS "ci",
-            COUNT(g.codbeb) AS "Countcodbeb"
-        FROM gusta g
-        GROUP BY g.ci
-    ) q0
-);
 
 -- 48. Las fuentes de soda que sirven la(s) bebida(s) que más gusta(n).
 
