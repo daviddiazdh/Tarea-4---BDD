@@ -1,5 +1,5 @@
 INSERT INTO bebedor(ci, nombre) VALUES
-(20000001, 'David Noches'),
+(20000001, 'David Nochez'),
 (25345637, 'Yisus Cries'),
 (12557814, 'Alan Largote'),
 (14568902, 'Ian Gracias'),
@@ -98,6 +98,7 @@ INSERT INTO vende(codfs, codbeb, precio) VALUES
 (1, 9, 3),
 (1, 7, 5),
 (1, 1, 1),
+(1, 3, 2),
 (2, 2, 3),
 (2, 3, 50),
 (2, 4, 60),
@@ -109,7 +110,7 @@ INSERT INTO vende(codfs, codbeb, precio) VALUES
 (4, 1, 3),
 (5, 1, 1),
 (5, 4, 1),
-(6, 6, 2),
+(6, 6, 2), 
 (7, 4, 3),
 (7, 1, 2),
 (8, 10, 1),

@@ -1,34 +1,15 @@
-
-
--- 48. Las fuentes de soda que sirven la(s) bebida(s) que más gusta(n).
-
-SELECT DISTINCT 
-    v.codfs,
-    fs.nombrefs
-FROM vende v
-JOIN fuente_soda fs ON fs.codfs = v.codfs
-WHERE NOT EXISTS (
-    SELECT 
-        q2."codbeb" 
-    FROM (
+-- 13. Los bebedores que únicamente frecuentan las fuentes de soda que únicamente sirven algunas de las bebidas que les gustan.
+SELECT 
+    *
+FROM bebedor b
+WHERE b.ci NOT IN (
+    SELECT DISTINCT
+        fr.ci
+    FROM frecuenta fr
+    JOIN vende v ON v.codfs = fr.codfs
+    WHERE (fr.ci, v.codbeb) NOT IN(
         SELECT
-            g.codbeb AS "codbeb",
-            COUNT(g.ci) AS "Countci"
-        FROM bebida b
-        JOIN gusta g ON g.codbeb = b.codbeb
-        GROUP BY g.codbeb
-        ORDER BY COUNT(g.ci) DESC
-        LIMIT 1
-    ) q2
-    WHERE NOT EXISTS (
-        SELECT 
-            1 
-        FROM vende v_inner
-        WHERE v_inner.codfs = v.codfs AND v_inner.codbeb = q2.codbeb
+            *
+        FROM gusta
     )
 );
-
--- Comentarios: 
--- Listo
-
-
