@@ -1,14 +1,12 @@
--- 28. Las bebidas que se sirven en las fuentes de soda que son frecuentadas por las personas que no les gusta la malta.
-
+-- 27. Las bebidas que se sirven en las fuentes de soda que son frecuentadas por las personas que les gusta la malta.
 SELECT DISTINCT
     beb.codbeb,
-    beb.nombrebeb,
-    q0.ci
+    beb.nombrebeb
 FROM (
     SELECT
         *
     FROM bebedor beb
-    WHERE NOT EXISTS(
+    WHERE EXISTS(
         SELECT 
             1
         FROM (
