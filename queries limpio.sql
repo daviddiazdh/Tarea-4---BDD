@@ -380,6 +380,19 @@ JOIN (
 
 ) q0 ON q0."ci" = b.ci;
 
+-- 22. Los bebedores a quienes no les gusta bebida alguna pero frecuentan al menos una fuente de soda.
+SELECT
+    b.ci,
+    b.nombre
+FROM bebedor b
+JOIN frecuenta fr ON b.ci = fr.ci
+WHERE b.ci NOT IN (
+    SELECT 
+        b.ci
+    FROM bebedor b
+    JOIN gusta g ON b.ci = g.ci
+);
+
 -- 26. Las bebidas que se venden en al menos dos de las fuentes de sodas frecuentadas por Luis Pérez
 SELECT 
     b.codbeb,
