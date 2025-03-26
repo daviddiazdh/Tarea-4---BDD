@@ -574,6 +574,24 @@ WHERE q0."ci" IN (
     )
 );
 
+-- 34. Las fuentes de soda que venden a menor precio la malta.
+SELECT 
+    v.codfs,
+    MIN(v.precio) AS precio_minimo,
+    fs.nombrefs
+FROM bebida beb
+JOIN vende v ON beb.codbeb = v.codbeb
+JOIN fuente_soda fs ON v.codfs = fs.codfs
+WHERE beb.nombrebeb = 'Centauro'
+GROUP BY v.codfs, fs.nombrefs
+HAVING MIN(v.precio) = (
+    SELECT 
+        MIN(precio) 
+    FROM vende v2 
+    JOIN bebida b2 ON v2.codbeb = b2.codbeb 
+    WHERE b2.nombrebeb = 'Centauro'
+);
+
 -- 36. La bebida más cara en las fuentes de soda que no venden al menos una de las bebidas que le gusta a Luis Pérez
 SELECT
     b.codbeb,
