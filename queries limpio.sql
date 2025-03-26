@@ -213,6 +213,45 @@ JOIN (
 WHERE q1."bebidasQueGusta" = q0."bebidasQueVende"
 ;
 
+-- 12. Los bebedores que sólo frecuentan las fuentes de sodas que sirven al menos las bebidas que les gustan.
+
+SELECT 
+    q0."ci",
+    b.nombre
+FROM (
+    SELECT
+        f.ci AS "ci",
+        COUNT(f.codfs) AS "CountCodFR"
+    FROM frecuenta f
+    GROUP BY f.ci
+) q0
+JOIN (
+    SELECT 
+        q0."ci",
+        COUNT(q1."codfs") AS "CountCodFS"
+    FROM (
+        SELECT
+            g.ci AS "ci",
+            COUNT(g.codbeb) AS "CodBebGusta"
+        FROM gusta g
+        GROUP BY g.ci
+    ) q0
+    JOIN (
+        SELECT
+            g.ci AS "ci",
+            f.codfs AS "codfs",
+            COUNT(g.codbeb) AS "CountCodBeb"
+        FROM gusta g
+        JOIN frecuenta f ON g.ci = f.ci
+        GROUP BY g.ci, f.codfs
+    ) q1 ON q0."ci" = q1."ci"
+    WHERE q0."CodBebGusta" = q1."CountCodBeb"
+    GROUP BY q0."ci"
+) q1 ON q1."ci" = q0."ci"
+JOIN bebedor b ON b.ci = q0."ci"
+WHERE q0."CountCodFR" = q1."CountCodFS";
+
+
 -- 14. Los bebedores que no frecuentan las fuentes de soda que sirven al menos una de las bebidas que no les gustan.
 SELECT 
     q2."ci",
