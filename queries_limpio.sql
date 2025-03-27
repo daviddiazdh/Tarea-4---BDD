@@ -582,14 +582,14 @@ SELECT
 FROM bebida beb
 JOIN vende v ON beb.codbeb = v.codbeb
 JOIN fuente_soda fs ON v.codfs = fs.codfs
-WHERE beb.nombrebeb = 'Centauro'
+WHERE beb.nombrebeb = 'Malta'
 GROUP BY v.codfs, fs.nombrefs
 HAVING MIN(v.precio) = (
     SELECT 
         MIN(precio) 
     FROM vende v2 
     JOIN bebida b2 ON v2.codbeb = b2.codbeb 
-    WHERE b2.nombrebeb = 'Centauro'
+    WHERE b2.nombrebeb = 'Malta'
 );
 
 -- 36. La bebida más cara en las fuentes de soda que no venden al menos una de las bebidas que le gusta a Luis Pérez
